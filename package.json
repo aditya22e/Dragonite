@@ -1,0 +1,59 @@
+{
+  "name": "my-code-editor",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "electron": "electron .",
+    "server": "node backend/server.js",
+    "dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\" \"npm run server\"",
+    "postbuild": "electron-builder -c.extraMetadata.main=main.js"
+  },
+  "build": {
+    "appId": "com.example.dragonite",
+    "productName": "Dragonite",
+    "files": [
+      "build/**/*",
+      "main.js",
+      "backend/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable"
+    }
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@monaco-editor/react": "^4.4.6",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "node-gyp": "^11.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "^5.0.1",
+    "xterm": "^5.3.0",
+    "xterm-addon-fit": "^0.8.0"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
+    "electron": "^23.0.0",
+    "electron-builder": "^26.0.12",
+    "wait-on": "^7.0.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
