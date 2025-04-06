@@ -1,49 +1,60 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { Terminal } from 'xterm';
+import { FitAddon } from 'xterm-addon-fit';
+import 'xterm/css/xterm.css';
 
-function Terminal() {
-  const [output, setOutput] = useState('');
-  const [input, setInput] = useState('');
+const pty = window.require('node-pty');
 
-  const handleCommand = (e) => {
-    if (e.key === 'Enter') {
-      const { exec } = window.require('child_process');
-      exec(input, (err, stdout) => {
-        setOutput(err ? err.message : stdout);
-        setInput('');
-      });
-    }
-  };
+function TerminalComponent() {
+  const terminalRef = useRef(null);
+  const xtermRef = useRef(null);
+
+  useEffect(() => {
+    const term = new Terminal({
+      cursorBlink: true,
+      theme: { background: '#1e1e1e', foreground: '#ffffff' },
+    });
+    const fitAddon = new FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(terminalRef.current);
+    fitAddon.fit();
+    xtermRef.current = term;
+
+    const shell = process.platform === 'win32' ? 'cmd.exe' : 'bash';
+    const ptyProcess = pty.spawn(shell, [], {
+      name: 'xterm-color',
+      cols: term.cols,
+      rows: term.rows,
+      cwd: process.env.HOME || process.env.USERPROFILE,
+      env: process.env,
+    });
+
+    ptyProcess.onData((data) => {
+      term.write(data);
+    });
+
+    term.onData((data) => {
+      ptyProcess.write(data);
+    });
+
+    const handleResize = () => {
+      fitAddon.fit();
+      ptyProcess.resize(term.cols, term.rows);
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      ptyProcess.kill();
+      term.dispose();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   return (
-    <div className="terminal">
-      <pre>{output}</pre>
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyPress={handleCommand}
-        placeholder="Type a command..."
-      />
+    <div style={{ height: '30vh', background: '#1e1e1e', padding: '10px' }}>
+      <div ref={terminalRef} style={{ height: '100%' }} />
     </div>
   );
 }
 
-export default Terminal;
-
-const styles = `
-  .terminal {
-    background: #1e1e1e;
-    color: white;
-    padding: 10px;
-    height: 200px;
-    overflow: auto;
-  }
-  .terminal input {
-    background: none;
-    border: none;
-    color: white;
-    width: 100%;
-  }
-`;
-const styleSheet = document.createElement('style');
-styleSheet.textContent = styles;
-document.head.appendChild(styleSheet);
+export default TerminalComponent;
