@@ -9,6 +9,7 @@ AI Code Suggestions: Get real-time code suggestions using the Gemini API (trigge
 
 Dependencies Mentioned
 Here’s a breakdown of the dependencies we installed for Dragonite, as reflected in the post:
+
 React: For the frontend UI.
 
 Electron: For building the desktop app.
